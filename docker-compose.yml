@@ -1,0 +1,72 @@
+version: "3.7"
+
+volumes:
+  pihole-logs: {}
+
+services:
+  coredns:
+    container_name: coredns
+    image: coredns/coredns:latest
+    restart: unless-stopped
+    environment:
+      AUTHORITATIVE_DNS: ${AUTHORITATIVE_DNS}
+    volumes:
+      - ./Corefile:/Corefile:ro
+    networks:
+      backend:
+        ipv4_address: 172.28.241.8
+    restart: unless-stopped
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    hostname: ${HOSTNAME}
+    restart: unless-stopped
+    ports:
+    - "${DNS_INTERFACE_IPV4}:53:53/tcp"
+    - "${DNS_INTERFACE_IPV4}:53:53/udp"
+    - "80:80/tcp"
+    environment:
+      TZ: 'Europe/London'
+      DNS1: '172.28.241.8'
+      DNS2: '172.28.241.8'
+      WEBPASSWORD: "${PIHOLE_PASSWORD}"
+    dns:
+      - 172.28.241.8
+    networks:
+      frontend:
+        ipv4_address: 172.28.240.10
+      backend:
+        ipv4_address: 172.28.241.10
+    volumes:
+      - pihole-logs:/var/log:rw
+    depends_on:
+      - coredns
+    restart: unless-stopped
+
+  ouroboros:
+    container_name: ouroboros
+    hostname: ouroboros
+    image: pyouroboros/ouroboros
+    environment:
+      CLEANUP: 'true'
+      #INTERVAL: 300
+      CRON: '0 0 3 * *'
+      LOG_LEVEL: info
+      SELF_UPDATE: 'true'
+      TZ: Europe/London
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+networks:
+  frontend:
+    name: frontend
+    ipam:
+      config:
+        - subnet: 172.28.240.0/24
+  backend:
+    name: backend
+    ipam:
+      config:
+        - subnet: 172.28.241.0/24

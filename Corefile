@@ -1,0 +1,24 @@
+lan.synchro.dev {
+    errors
+    log . {
+        class denial error
+    }
+    forward . {$AUTHORITATIVE_DNS} {
+        policy sequential
+        health_check 5s
+    }
+}
+
+. {
+    cache
+    errors
+    log . {
+        class denial error
+    }
+    forward . tls://9.9.9.9 tls://149.112.112.112 {
+        tls_servername dns.quad9.net
+        policy sequential
+        health_check 5s
+    }
+}
+
