@@ -51,7 +51,7 @@ services:
     environment:
       CLEANUP: 'true'
       #INTERVAL: 300
-      CRON: '0 0 3 * *'
+      CRON: '0 3 * * *'
       LOG_LEVEL: info
       SELF_UPDATE: 'true'
       TZ: Europe/London
