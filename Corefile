@@ -9,6 +9,28 @@ lan.synchro.dev {
     }
 }
 
+1.1.10.in-addr.arpa {
+    errors
+    log . {
+        class denial error
+    }
+    forward . {$AUTHORITATIVE_DNS} {
+        policy sequential
+        health_check 5s
+    }
+}
+
+2.7.f.0.5.e.b.0.b.8.0.1.0.0.2.ip6.arpa {
+    errors
+    log . {
+        class denial error
+    }
+    forward . {$AUTHORITATIVE_DNS} {
+        policy sequential
+        health_check 5s
+    }
+}
+
 . {
     cache
     errors
