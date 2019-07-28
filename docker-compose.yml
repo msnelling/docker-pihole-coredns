@@ -24,7 +24,6 @@ services:
     ports:
     - "${DNS_INTERFACE_IPV4}:53:53/tcp"
     - "${DNS_INTERFACE_IPV4}:53:53/udp"
-    #- "80:80/tcp"
     environment:
       TZ: 'Europe/London'
       DNS1: '172.28.241.8'
@@ -44,7 +43,8 @@ services:
     labels:
       traefik.enable: "true"
       traefik.port: "80"
-      traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefixStrip:/pihole"    
+      traefik.docker.network: "frontend"
+      traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefix:/admin"
 
   ouroboros:
     container_name: ouroboros
@@ -82,7 +82,8 @@ services:
     labels:
       traefik.enable: "true"
       traefik.port: "8080"
-      traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefix:/admin"    
+      traefik.docker.network: "frontend"
+      traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefixStrip:/traefik"
 
 networks:
   frontend:
