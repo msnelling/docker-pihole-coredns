@@ -7,7 +7,6 @@ services:
   coredns:
     container_name: coredns
     image: coredns/coredns:latest
-    restart: unless-stopped
     environment:
       AUTHORITATIVE_DNS: ${AUTHORITATIVE_DNS}
     volumes:
@@ -21,7 +20,6 @@ services:
     container_name: pihole
     image: pihole/pihole:latest
     hostname: ${HOSTNAME}
-    restart: unless-stopped
     ports:
     - "${DNS_INTERFACE_IPV4}:53:53/tcp"
     - "${DNS_INTERFACE_IPV4}:53:53/udp"
@@ -50,7 +48,6 @@ services:
     image: pyouroboros/ouroboros
     environment:
       CLEANUP: 'true'
-      #INTERVAL: 300
       CRON: '0 3 * * *'
       LOG_LEVEL: info
       SELF_UPDATE: 'true'
