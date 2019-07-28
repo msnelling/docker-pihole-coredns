@@ -1,0 +1,38 @@
+logLevel = "INFO" #DEBUG, INFO, WARN, ERROR, FATAL, PANIC
+defaultEntryPoints = ["http", "https"]
+
+[api]
+  entryPoint = "traefik"
+  dashboard = true
+  address = ":8080"
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+#    [entryPoints.http.redirect]
+#    entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+
+[acme]
+caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+email = "email@example.com"
+storage ="/acme/acme.json"
+entryPoint = "https"
+acmeLogging = true
+
+  [acme.dnsChallenge]
+  provider = "cloudflare"
+  delayBeforeCheck = 0
+  resolvers = ["8.8.8.8"]
+
+  [[acme.domains]]
+    main = "*.example.com"
+    sans = []
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "example.com"
+watch = true
+exposedbydefault = false

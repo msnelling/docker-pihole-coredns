@@ -2,11 +2,12 @@ version: "3.7"
 
 volumes:
   pihole-logs: {}
+  acme-data: {}
 
 services:
   coredns:
     container_name: coredns
-    image: coredns/coredns:latest
+    image: coredns/coredns
     environment:
       AUTHORITATIVE_DNS: ${AUTHORITATIVE_DNS}
     volumes:
@@ -18,12 +19,12 @@ services:
 
   pihole:
     container_name: pihole
-    image: pihole/pihole:latest
-    hostname: ${HOSTNAME}
+    image: pihole/pihole
+    hostname: ${PIHOLE_HOSTNAME}
     ports:
     - "${DNS_INTERFACE_IPV4}:53:53/tcp"
     - "${DNS_INTERFACE_IPV4}:53:53/udp"
-    - "80:80/tcp"
+    #- "80:80/tcp"
     environment:
       TZ: 'Europe/London'
       DNS1: '172.28.241.8'
@@ -33,7 +34,6 @@ services:
       - 172.28.241.8
     networks:
       frontend:
-        ipv4_address: 172.28.240.10
       backend:
         ipv4_address: 172.28.241.10
     volumes:
@@ -41,6 +41,10 @@ services:
     depends_on:
       - coredns
     restart: unless-stopped
+    labels:
+      traefik.enable: "true"
+      traefik.port: "80"
+      traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefixStrip:/pihole"    
 
   ouroboros:
     container_name: ouroboros
@@ -55,6 +59,30 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
+
+  traefik:
+    image: traefik
+    command:
+      - --acme.email=${CLOUDFLARE_API_EMAIL}
+      - --acme.domains=${PIHOLE_HOSTNAME}.${DOMAIN}
+      - --docker.domain=${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - CF_API_EMAIL=${CLOUDFLARE_API_EMAIL}
+      - CF_API_KEY=${CLOUDFLARE_API_KEY}
+    networks:
+      frontend:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.toml:/etc/traefik/traefik.toml
+      - acme-data:/acme
+    restart: unless-stopped
+    labels:
+      traefik.enable: "true"
+      traefik.port: "8080"
+      traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefixStrip:/traefik"    
 
 networks:
   frontend:
