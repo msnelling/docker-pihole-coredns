@@ -16,7 +16,7 @@ defaultEntryPoints = ["http", "https"]
     [entryPoints.https.tls]
 
 [acme]
-caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+caServer = "https://acme-v02.api.letsencrypt.org/directory"
 email = "email@example.com"
 storage ="/acme/acme.json"
 entryPoint = "https"
