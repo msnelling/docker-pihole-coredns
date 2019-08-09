@@ -1,7 +1,7 @@
 version: "3.7"
 
 volumes:
-  pihole-logs: {}
+  pihole-data: {}
   acme-data: {}
 
 services:
@@ -15,6 +15,10 @@ services:
     networks:
       backend:
         ipv4_address: 172.28.241.8
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "5"
     restart: unless-stopped
 
   pihole:
@@ -29,6 +33,7 @@ services:
       DNS1: '172.28.241.8'
       DNS2: '172.28.241.8'
       WEBPASSWORD: "${PIHOLE_PASSWORD}"
+      DBFILE: /etc/pihole/db/pihole-FTL.db
     dns:
       - 172.28.241.8
     networks:
@@ -36,15 +41,19 @@ services:
       backend:
         ipv4_address: 172.28.241.10
     volumes:
-      - pihole-logs:/var/log:rw
-    depends_on:
-      - coredns
-    restart: unless-stopped
+      - pihole-data:/etc/pihole/db:rw
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "5"
     labels:
       traefik.enable: "true"
       traefik.port: "80"
       traefik.docker.network: "frontend"
       traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefix:/admin"
+    depends_on:
+      - coredns
+    restart: unless-stopped
 
   ouroboros:
     container_name: ouroboros
@@ -79,12 +88,12 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik.toml:/etc/traefik/traefik.toml
       - acme-data:/acme
-    restart: unless-stopped
     labels:
       traefik.enable: "true"
       traefik.port: "8080"
       traefik.docker.network: "frontend"
       traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefixStrip:/traefik"
+    restart: unless-stopped
 
 networks:
   frontend:

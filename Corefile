@@ -1,9 +1,9 @@
-lan.synchro.dev {
+synchro.dev {
     errors
     log . {
         class denial error
     }
-    forward . {$AUTHORITATIVE_DNS} {
+    forward . 10.1.1.14 {
         policy sequential
         health_check 5s
     }
