@@ -9,6 +9,17 @@ synchro.dev {
     }
 }
 
+xmple.io {
+    errors
+    log . {
+        class denial error
+    }
+    forward . 10.1.1.17 {
+        policy sequential
+        health_check 5s
+    }
+}
+
 1.1.10.in-addr.arpa {
     errors
     log . {
