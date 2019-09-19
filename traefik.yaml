@@ -1,0 +1,31 @@
+log:
+  level: INFO
+
+api:
+  dashboard: true
+
+entryPoints:
+  http:
+    address: ":80"
+  https:
+    address: ":443"
+
+providers:
+  file:
+    directory: /etc/traefik/traefik.d
+    watch: true
+  docker:
+    watch: true
+    exposedByDefault: false
+
+certificatesResolvers:
+  default:
+    acme:
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      storage: /acme/acme.json
+      dnsChallenge:
+        provider: cloudflare
+        delayBeforeCheck: 0
+        resolvers:
+          - 1.1.1.1:53
+          - 1.0.0.1:53

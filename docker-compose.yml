@@ -26,14 +26,13 @@ services:
     image: pihole/pihole
     hostname: ${PIHOLE_HOSTNAME}
     ports:
-    - "${DNS_INTERFACE_IPV4}:53:53/tcp"
-    - "${DNS_INTERFACE_IPV4}:53:53/udp"
+      - "${DNS_INTERFACE_IPV4}:53:53/tcp"
+      - "${DNS_INTERFACE_IPV4}:53:53/udp"
     environment:
       TZ: 'Europe/London'
       DNS1: '172.28.241.8'
       DNS2: '172.28.241.8'
       WEBPASSWORD: "${PIHOLE_PASSWORD}"
-      DBFILE: /etc/pihole/db/pihole-FTL.db
     dns:
       - 172.28.241.8
     networks:
@@ -41,16 +40,24 @@ services:
       backend:
         ipv4_address: 172.28.241.10
     volumes:
-      - pihole-data:/etc/pihole/db:rw
+      - pihole-data:/etc/pihole:rw
     logging:
       options:
         max-size: "10m"
         max-file: "5"
     labels:
-      traefik.enable: "true"
-      traefik.port: "80"
-      traefik.docker.network: "frontend"
-      traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefix:/admin"
+      traefik.enable: true
+      traefik.docker.network: frontend
+      traefik.http.routers.pihole-insecure.rule: Host(`${PIHOLE_HOSTNAME}.${DOMAIN}`) && PathPrefix(`/admin`)
+      traefik.http.routers.pihole-insecure.entrypoints: http
+      traefik.http.routers.pihole-insecure.middlewares: httpsRedirect@file
+      traefik.http.routers.pihole.rule: Host(`${PIHOLE_HOSTNAME}.${DOMAIN}`) && PathPrefix(`/admin`)
+      traefik.http.routers.pihole.entrypoints: https
+      traefik.http.routers.pihole.tls.certresolver: default
+      traefik.http.routers.pihole.middlewares: adminAuth@file
+      traefik.http.services.pihole.loadbalancer.server.scheme: http
+      traefik.http.services.pihole.loadbalancer.server.port: 80
+      com.ouroboros.enable: "true"    
     depends_on:
       - coredns
     restart: unless-stopped
@@ -73,9 +80,7 @@ services:
     container_name: traefik
     image: traefik
     command:
-      - --acme.email=${CLOUDFLARE_API_EMAIL}
-      - --acme.domains=${PIHOLE_HOSTNAME}.${DOMAIN}
-      - --docker.domain=${DOMAIN}
+      - --certificatesresolvers.default.acme.email=${CLOUDFLARE_API_EMAIL}
     ports:
       - "80:80"
       - "443:443"
@@ -86,13 +91,20 @@ services:
       frontend:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik.toml:/etc/traefik/traefik.toml
+      - ./traefik.yaml:/etc/traefik/traefik.yaml
+      - ./traefik.d:/etc/traefik/traefik.d
       - acme-data:/acme
     labels:
       traefik.enable: "true"
-      traefik.port: "8080"
       traefik.docker.network: "frontend"
-      traefik.frontend.rule: "Host:${PIHOLE_HOSTNAME}.${DOMAIN}; PathPrefixStrip:/traefik"
+      traefik.http.routers.api-insecure.rule: Host(`${PIHOLE_HOSTNAME}.${DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      traefik.http.routers.api-insecure.entrypoints: http
+      traefik.http.routers.api-insecure.middlewares: httpsRedirect@file
+      traefik.http.routers.api.rule: Host(`${PIHOLE_HOSTNAME}.${DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      traefik.http.routers.api.entrypoints: https
+      traefik.http.routers.api.tls.certresolver: default
+      traefik.http.routers.api.middlewares: adminAuth@file
+      traefik.http.routers.api.service: api@internal
     restart: unless-stopped
 
 networks:
