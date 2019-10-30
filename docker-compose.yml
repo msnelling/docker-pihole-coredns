@@ -57,23 +57,8 @@ services:
       traefik.http.routers.pihole.middlewares: adminAuth@file
       traefik.http.services.pihole.loadbalancer.server.scheme: http
       traefik.http.services.pihole.loadbalancer.server.port: 80
-      com.ouroboros.enable: "true"    
     depends_on:
       - coredns
-    restart: unless-stopped
-
-  ouroboros:
-    container_name: ouroboros
-    hostname: ouroboros
-    image: pyouroboros/ouroboros
-    environment:
-      CLEANUP: 'true'
-      CRON: '0 3 * * *'
-      LOG_LEVEL: info
-      SELF_UPDATE: 'true'
-      TZ: Europe/London
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
   traefik:
