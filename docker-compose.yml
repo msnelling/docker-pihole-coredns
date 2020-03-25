@@ -63,7 +63,7 @@ services:
 
   traefik:
     container_name: traefik
-    image: traefik
+    image: traefik:v2.2
     command:
       - --certificatesresolvers.default.acme.email=${CLOUDFLARE_API_EMAIL}
     ports:
