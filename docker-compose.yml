@@ -28,6 +28,8 @@ services:
     ports:
       - "${DNS_INTERFACE_IPV4}:53:53/tcp"
       - "${DNS_INTERFACE_IPV4}:53:53/udp"
+      - "${DNS_INTERFACE_IPV6}:53:53/tcp"
+      - "${DNS_INTERFACE_IPV6}:53:53/udp"
     environment:
       TZ: 'Europe/London'
       DNS1: '172.28.241.8'
