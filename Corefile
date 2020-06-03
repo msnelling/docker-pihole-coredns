@@ -3,7 +3,7 @@ xmple.io {
     log . {
         class denial error
     }
-    forward . 10.1.1.17 {
+    forward . 10.1.1.14 {
         policy sequential
         health_check 5s
     }
